@@ -12,7 +12,6 @@ struct Vin {
     }
 }
 
-
 enum EngineType: CaseIterable {
     case diesel
     case petrol
@@ -48,6 +47,7 @@ protocol Dealership {
     
     var carOnService: [Car] { get set }
     var carOnSaleVin: Set<String> { get set }
+    var carOnInspection: Car? { get }
     
     func offerAccessories(accessories: [Accessories])
     func presaleService(car: Car)
@@ -69,8 +69,18 @@ struct Porsche: Car {
         print("I'm \(brand) \(model). My \(engineType) engine was starting.")
     }
     
+    enum Model: String, CaseIterable {
+        case nineEleven = "911"
+        case macan = "Macan"
+        case taycan = "Taycan"
+    }
+    
     static func getRandomCar() -> Porsche{
-        return Porsche(model: "911" , year: Int.random(in: 2018...2022), accessories: [Accessories.allCases.randomElement()!], engineType: EngineType.allCases.randomElement()!, price: Double.random(in: 50_000...150_000))
+        return Porsche(model: Model.allCases.randomElement()!.rawValue,
+                       year: Int.random(in: 2018...2022),
+                       accessories: [Accessories.allCases.randomElement()!],
+                       engineType: EngineType.allCases.randomElement()!,
+                       price: Double.random(in: 50_000...150_000))
     }
 }
 
@@ -87,8 +97,18 @@ struct Toyota: Car  {
         print("I'm \(brand) \(model). My \(engineType) engine was starting.")
     }
     
+    enum Model: String, CaseIterable {
+        case ravFour = "Rav4"
+        case corolla = "Corolla"
+        case camry = "Camry"
+    }
+    
     static func getRandomCar() -> Toyota{
-        return Toyota(model: "Rav4" , year: Int.random(in: 2018...2022), accessories: [Accessories.allCases.randomElement()!], engineType: EngineType.allCases.randomElement()!, price: Double.random(in: 30_000...60_000))
+        return Toyota(model: Model.allCases.randomElement()!.rawValue,
+                      year: Int.random(in: 2018...2022),
+                      accessories: [Accessories.allCases.randomElement()!],
+                      engineType: EngineType.allCases.randomElement()!,
+                      price: Double.random(in: 30_000...60_000))
     }
 }
 struct BMW: Car {
@@ -104,8 +124,18 @@ struct BMW: Car {
         print("I'm \(brand) \(model). My \(engineType) engine was starting.")
     }
     
+    enum Model: String, CaseIterable {
+        case xFive = "x5"
+        case xSix = "x6"
+        case xSeven = "x7"
+    }
+    
     static func getRandomCar() -> BMW{
-        return BMW(model: "x5" , year: Int.random(in: 2018...2022), accessories: [Accessories.allCases.randomElement()!], engineType: EngineType.allCases.randomElement()!, price: Double.random(in: 50_000...100_000))
+        return BMW(model: Model.allCases.randomElement()!.rawValue,
+                   year: Int.random(in: 2018...2022),
+                   accessories: [Accessories.allCases.randomElement()!],
+                   engineType: EngineType.allCases.randomElement()!,
+                   price: Double.random(in: 50_000...100_000))
     }
 }
 
@@ -120,6 +150,8 @@ class PorscheDealership: Dealership {
     var carOnService: [Car] = []
     var carOnSaleVin: Set<String> = []
     
+    var carOnInspection: Car?
+    
     init(showroomCapacity: Int, stockCars: [Car], showroomCars: [Car], cars: [Car]) {
         self.showroomCapacity = showroomCapacity
         self.stockCars = stockCars
@@ -136,7 +168,7 @@ class PorscheDealership: Dealership {
     
     func presaleService(car: Car) {
         carOnService.append(car)
-        print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) отправлен на предпродажную подготовкую.")
+        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) sent to pre-sales service")
     }
     
     func addToShowroom(car: Car) {
@@ -144,19 +176,19 @@ class PorscheDealership: Dealership {
             if carOnService.contains(where: { $0.vin == car.vin }) {
                 showroomCars.append(car)
                 stockCars.removeAll(where: { $0.vin == car.vin })
-                print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) прошел предпродажную подготовкую и отправлен в салон.")
+                print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) passed the pre-sales service and sent to the showroom.")
             }
             else {
-                print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) не проходил предпродажную подготовкую и не может быть отправлен в салон.")
+                print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) has not been pre-sales and cannot be sent to the showroom.")
             }
         }
     }
     
     func sellCar(car: Car) {
         if carOnService.contains(where: { $0.vin == car.vin }) {
-            print("У автомобиля пройдена предпрожадная подготовка. Автомобиль готов к продаже.")
+            print("\nThe car has passed pre-sales service. The car is ready for sale.")
         } else {
-            print("У автомобиля НЕ пройдена предпрожадная подготовка. Выберите другой автомобиль.")
+            print("\nThe car has not been pre-sales serviced. Сhoose another car or request a pre-sales service")
             return
         }
         
@@ -166,14 +198,14 @@ class PorscheDealership: Dealership {
         
         showroomCars.removeAll(where: { $0.vin == car.vin })
         cars.removeAll(where: { $0.vin == car.vin })
-        print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) успешно продан.")
+        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) successfully sold.")
     }
     
     func orderCar() {
         let car = Porsche.getRandomCar()
         stockCars.append(car)
         cars.append(car)
-        print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) заказан и отправлен на парковку.")
+        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) is ordered and sent to the parking lot.")
     }
 }
 
@@ -188,6 +220,8 @@ class BMWDealership: Dealership {
     var carOnService: [Car] = []
     var carOnSaleVin: Set<String> = []
     
+    var carOnInspection: Car?
+    
     init(showroomCapacity: Int, stockCars: [Car], showroomCars: [Car], cars: [Car]) {
         self.showroomCapacity = showroomCapacity
         self.stockCars = stockCars
@@ -204,7 +238,7 @@ class BMWDealership: Dealership {
     
     func presaleService(car: Car) {
         carOnService.append(car)
-        print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) отправлен на предпродажную подготовкую.")
+        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) sent to pre-sales service")
     }
     
     func addToShowroom(car: Car) {
@@ -212,19 +246,19 @@ class BMWDealership: Dealership {
             if carOnService.contains(where: { $0.vin == car.vin }) {
                 showroomCars.append(car)
                 stockCars.removeAll(where: { $0.vin == car.vin })
-                print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) прошел предпродажную подготовкую и отправлен в салон.")
+                print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) passed the pre-sales service and sent to the showroom.")
             }
             else {
-                print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) не проходил предпродажную подготовкую и не может быть отправлен в салон.")
+                print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) has not been pre-sales and cannot be sent to the showroom.")
             }
         }
     }
     
     func sellCar(car: Car) {
         if carOnService.contains(where: { $0.vin == car.vin }) {
-            print("У автомобиля пройдена предпрожадная подготовка. Автомобиль готов к продаже.")
+            print("\nThe car has passed pre-sales service. The car is ready for sale.")
         } else {
-            print("У автомобиля НЕ пройдена предпрожадная подготовка. Выберите другой автомобиль.")
+            print("\nThe car has not been pre-sales serviced. Сhoose another car or request a pre-sales service")
             return
         }
         
@@ -234,14 +268,14 @@ class BMWDealership: Dealership {
         
         showroomCars.removeAll(where: { $0.vin == car.vin })
         cars.removeAll(where: { $0.vin == car.vin })
-        print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) успешно продан.")
+        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) successfully sold.")
     }
     
     func orderCar() {
         let car = BMW.getRandomCar()
         stockCars.append(car)
         cars.append(car)
-        print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) заказан и отправлен на парковку.")
+        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) is ordered and sent to the parking lot.")
     }
 }
 
@@ -256,6 +290,8 @@ class ToyotaDealership: Dealership {
     var carOnService: [Car] = []
     var carOnSaleVin: Set<String> = []
     
+    var carOnInspection: Car?
+    
     init(showroomCapacity: Int, stockCars: [Car], showroomCars: [Car], cars: [Car]) {
         self.showroomCapacity = showroomCapacity
         self.stockCars = stockCars
@@ -272,7 +308,7 @@ class ToyotaDealership: Dealership {
     
     func presaleService(car: Car) {
         carOnService.append(car)
-        print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) отправлен на предпродажную подготовкую.")
+        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) sent to pre-sales service")
     }
     
     func addToShowroom(car: Car) {
@@ -280,72 +316,42 @@ class ToyotaDealership: Dealership {
             if carOnService.contains(where: { $0.vin == car.vin }) {
                 showroomCars.append(car)
                 stockCars.removeAll(where: { $0.vin == car.vin })
-                print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) прошел предпродажную подготовкую и отправлен в салон.")
+                print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) passed the pre-sales service and sent to the showroom.")
             }
             else {
-                print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) не проходил предпродажную подготовкую и не может быть отправлен в салон.")
+                print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) has not been pre-sales and cannot be sent to the showroom.")
             }
         }
     }
     
     func sellCar(car: Car) {
-        if carOnService.contains(where: { $0.vin == car.vin }) {
-            print("У автомобиля пройдена предпрожадная подготовка. Автомобиль готов к продаже.")
+        if showroomCars.contains(where: {$0.vin == car.vin}) {
+            if carOnService.contains(where: { $0.vin == car.vin }) {
+                print("\nThe car has passed pre-sales service. The car is ready for sale.")
+            } else {
+                print("\nThe car has not been pre-sales serviced. Сhoose another car or request a pre-sales service")
+                return
+            }
+            
+            if car.accessories.count == 0 {
+                offerAccessories(accessories: Accessories.allCases)
+            }
+            
+            showroomCars.removeAll(where: { $0.vin == car.vin })
+            cars.removeAll(where: { $0.vin == car.vin })
+            print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) successfully sold.")
         } else {
-            print("У автомобиля НЕ пройдена предпрожадная подготовка. Выберите другой автомобиль.")
-            return
+            print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) is not in the showroom.")
         }
-        
-        if car.accessories.count == 0 {
-            offerAccessories(accessories: Accessories.allCases)
-        }
-        
-        showroomCars.removeAll(where: { $0.vin == car.vin })
-        cars.removeAll(where: { $0.vin == car.vin })
-        print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) успешно продан.")
     }
     
     func orderCar() {
         let car = Toyota.getRandomCar()
         stockCars.append(car)
         cars.append(car)
-        print("Автомобиль \(car.brand) \(car.model) год:\(car.year) vin:\(car.vin) заказан и отправлен на парковку.")
+        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) is ordered and sent to the parking lot.")
     }
 }
-
-
-let porsche = Porsche(model: "Taycan", year: 2020, accessories: [], engineType: .petrol, price: 100_000)
-let toyota = Toyota(model: "Rav4", year: 2020, accessories: [.сarpets], engineType: .electric, price: 40_000)
-let bmw = Toyota(model: "x5", year: 2020, accessories: [.firstAidKit], engineType: .diesel, price: 60_000)
-
-
-let porscheDealer = PorscheDealership(showroomCapacity: 5, stockCars: [], showroomCars: [], cars: [])
-let bmwDealer = BMWDealership(showroomCapacity: 20, stockCars: [], showroomCars: [], cars: [])
-let toyotaDealer = ToyotaDealership(showroomCapacity: 10, stockCars: [], showroomCars: [], cars: [])
-
-let array = [porscheDealer as Dealership, bmwDealer, toyotaDealer]
-
-array.forEach {
-    print($0.tagline)
-}
-
-for _ in 0...30 {
-    porscheDealer.orderCar()
-}
-
-porscheDealer.offerAccessories(accessories: Accessories.allCases)
-porscheDealer.cars.forEach {
-    porscheDealer.presaleService(car: $0)
-}
-porscheDealer.cars.forEach {
-    porscheDealer.addToShowroom(car: $0)
-}
-//porscheDealer.addToShowroom(car: porscheDealer.cars.last!)
-porscheDealer.showroomCars
-//porscheDealer.sellCar(car: porscheDealer.showroomCars.last!)
-porscheDealer.cars
-porscheDealer.showroomCars
-
 
 protocol SpecialOffer {
     func addEmergencyPack()
@@ -354,69 +360,98 @@ protocol SpecialOffer {
 
 enum SpecialOfferError: Error {
     case fullShowroom
+    case carIsOnShowroom
 }
 
 extension PorscheDealership: SpecialOffer {
     func addEmergencyPack() {
-        for i in 0...(self.cars.count-1) {
-            if !self.cars[i].accessories.contains(where: {$0 == .extinguisher}) {
-                self.cars[i].accessories.append(.extinguisher)
+        if var car = self.carOnInspection {
+            if !car.accessories.contains(where: {$0 == .extinguisher}) {
+                car.accessories.append(.extinguisher)
             }
             
-            if !self.cars[i].accessories.contains(where: {$0 == .firstAidKit}) {
-                self.cars[i].accessories.append(.firstAidKit)
+            if !car.accessories.contains(where: {$0 == .firstAidKit}) {
+                car.accessories.append(.firstAidKit)
             }
         }
     }
     
     func makeSpecialOffer() throws {
-        let year: Int = Int(Date.now.formatted(.dateTime.year())) ?? 1900
-        if self.stockCars.count > 0 {
-            for i in 0...(self.stockCars.count-1) {
-                if self.stockCars[i].year < year  && !self.carOnSaleVin.contains(where: {$0 == self.stockCars[i].vin}) {
-                    self.stockCars[i].price = self.stockCars[i].price - self.stockCars[i].price * 0.15
-                    self.carOnSaleVin.insert(self.stockCars[i].vin)
-                    
-                    if !self.stockCars[i].accessories.contains(where: {$0 == .extinguisher}) {
-                        self.stockCars[i].accessories.append(.extinguisher)
-                    }
-                    
-                    if !self.stockCars[i].accessories.contains(where: {$0 == .firstAidKit}) {
-                        self.stockCars[i].accessories.append(.firstAidKit)
-                    }
+        let year: Int = Int(Date.now.formatted(.dateTime.year() )) ?? 1900
+        if var car = self.carOnInspection {
+            if car.year < year  && !self.carOnSaleVin.contains(where: {$0 == car.vin}) {
+                car.price = car.price - car.price * 0.15
+                self.carOnSaleVin.insert(car.vin)
+                        
+                addEmergencyPack()
+                print("\nCar: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) received a SpecialOffer")
+                
+                if !self.showroomCars.contains(where: {$0.vin == car.vin}){
                     if self.showroomCars.count < self.showroomCapacity {
-                        self.showroomCars.append(self.stockCars[i])
+                        self.addToShowroom(car: car)
                     } else {
                         throw SpecialOfferError.fullShowroom
                     }
-                    print("Автомобиль \(self.stockCars[i].brand) \(self.stockCars[i].model) год:\(self.stockCars[i].year) vin:\(self.stockCars[i].vin) находящийся в на парковке получил SpecialOffer")
+                } else {
+                    throw SpecialOfferError.carIsOnShowroom
                 }
-            }
-        }
-        if self.showroomCars.count > 0 {
-            for i in 0...(self.showroomCars.count-1) {
-                if self.showroomCars[i].year < year  && !self.carOnSaleVin.contains(where: {$0 == self.showroomCars[i].vin}) {
-                    self.showroomCars[i].price = self.showroomCars[i].price - self.showroomCars[i].price * 0.15
-                    self.carOnSaleVin.insert(self.showroomCars[i].vin)
-                    
-                    if !self.showroomCars[i].accessories.contains(where: {$0 == .extinguisher}) {
-                        self.showroomCars[i].accessories.append(.extinguisher)
-                    }
-                    
-                    if !self.showroomCars[i].accessories.contains(where: {$0 == .firstAidKit}) {
-                        self.showroomCars[i].accessories.append(.firstAidKit)
-                    }
-                    
-                    print("Автомобиль \(self.showroomCars[i].brand) \(self.showroomCars[i].model) год:\(self.showroomCars[i].year) vin:\(self.showroomCars[i].vin) находящийся в автосалоне получил SpecialOffer")
-                }
+                
             }
         }
     }
 }
 
-porscheDealer.addEmergencyPack()
-do {
-    try porscheDealer.makeSpecialOffer()
-} catch SpecialOfferError.fullShowroom {
-    print("Невозможно отправить автомобиль в автосалон. Автосалон полон.")
+let porsche = Porsche(model: "Panamera", year: 2020, accessories: [], engineType: .petrol, price: 100_000)
+let toyota = Toyota(model: "Rav4", year: 2020, accessories: [.сarpets], engineType: .electric, price: 40_000)
+let bmw = BMW(model: "x5", year: 2020, accessories: [.firstAidKit], engineType: .diesel, price: 60_000)
+
+let porscheDealer = PorscheDealership(showroomCapacity: 3, stockCars: [], showroomCars: [porsche], cars: [porsche])
+let bmwDealer = BMWDealership(showroomCapacity: 5, stockCars: [], showroomCars: [], cars: [toyota])
+let toyotaDealer = ToyotaDealership(showroomCapacity: 3, stockCars: [], showroomCars: [bmw], cars: [bmw])
+
+let array = [porscheDealer as Dealership, bmwDealer, toyotaDealer]
+
+array.forEach {
+    print($0.tagline)
 }
+
+for _ in 0...4 {
+    porscheDealer.orderCar()
+    bmwDealer.orderCar()
+    toyotaDealer.orderCar()
+}
+
+porscheDealer.cars.forEach {
+    porscheDealer.presaleService(car: $0)
+}
+
+porscheDealer.cars.forEach {
+    porscheDealer.addToShowroom(car: $0)
+}
+
+bmwDealer.presaleService(car: bmw)
+bmwDealer.sellCar(car: bmw)
+
+
+for car in porscheDealer.cars {
+    porscheDealer.carOnInspection = car
+    do {
+        try porscheDealer.makeSpecialOffer()
+    } catch SpecialOfferError.fullShowroom {
+        print("It is not possible to send the car(vin:\(car.vin)) to the showroom. The showroom is full.")
+    } catch SpecialOfferError.carIsOnShowroom {
+        print("The car(vin:\(car.vin)) is already in the showroom.")
+    }
+}
+
+for car in porscheDealer.showroomCars {
+    porscheDealer.carOnInspection = car
+    do {
+        try porscheDealer.makeSpecialOffer()
+    } catch SpecialOfferError.fullShowroom {
+        print("It is not possible to send the car(vin:\(car.vin)) to the showroom. The showroom is full.")
+    } catch SpecialOfferError.carIsOnShowroom {
+        print("The car(vin:\(car.vin)) is already in the showroom.")
+    }
+}
+
