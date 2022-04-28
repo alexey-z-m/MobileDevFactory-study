@@ -1,13 +1,18 @@
 import Foundation
+
 struct Vin {
     static var vins = Set<String>()
     static func randomVin() -> String {
         let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        let vin = String((0..<6).map{ _ in letters.randomElement()! })
-        if Vin.vins.insert(vin).inserted {
-            return vin
+        let vin = String((0..<6).map{ _ in letters.randomElement() ?? String.Element("-")})
+        if Vin.vins.count < (letters.count << 6) {
+            if Vin.vins.insert(vin).inserted {
+                return vin
+            } else {
+                return randomVin()
+            }
         } else {
-            return randomVin()
+            return "------"
         }
     }
 }
@@ -30,7 +35,7 @@ protocol Car {
     var model: String { get }
     var year: Int { get }
     
-    var accessories: [Accessories] { get set }
+    var accessories: [Accessories?] { get set }
     var engineType: EngineType { get }
     var price: Double { get set }
     
@@ -61,7 +66,7 @@ struct Porsche: Car {
     let brand = "Porsche"
     let model: String
     let year: Int
-    var accessories: [Accessories]
+    var accessories: [Accessories?]
     var engineType: EngineType
     var price: Double
     
@@ -76,10 +81,10 @@ struct Porsche: Car {
     }
     
     static func getRandomCar() -> Porsche{
-        return Porsche(model: Model.allCases.randomElement()!.rawValue,
+        return Porsche(model: Model.allCases.randomElement()?.rawValue ?? "",
                        year: Int.random(in: 2018...2022),
-                       accessories: [Accessories.allCases.randomElement()!],
-                       engineType: EngineType.allCases.randomElement()!,
+                       accessories: [Accessories.allCases.randomElement()],
+                       engineType: EngineType.allCases.randomElement() ?? EngineType.petrol,
                        price: Double.random(in: 50_000...150_000))
     }
 }
@@ -89,7 +94,7 @@ struct Toyota: Car  {
     let brand = "Toyota"
     let model: String
     let year: Int
-    var accessories: [Accessories]
+    var accessories: [Accessories?]
     var engineType: EngineType
     var price: Double
     
@@ -104,10 +109,10 @@ struct Toyota: Car  {
     }
     
     static func getRandomCar() -> Toyota{
-        return Toyota(model: Model.allCases.randomElement()!.rawValue,
+        return Toyota(model: Model.allCases.randomElement()?.rawValue ?? "",
                       year: Int.random(in: 2018...2022),
-                      accessories: [Accessories.allCases.randomElement()!],
-                      engineType: EngineType.allCases.randomElement()!,
+                      accessories: [Accessories.allCases.randomElement()],
+                      engineType: EngineType.allCases.randomElement() ?? EngineType.petrol,
                       price: Double.random(in: 30_000...60_000))
     }
 }
@@ -116,7 +121,7 @@ struct BMW: Car {
     let brand = "BMW"
     let model: String
     let year: Int
-    var accessories: [Accessories]
+    var accessories: [Accessories?]
     var engineType: EngineType
     var price: Double
     
@@ -131,10 +136,10 @@ struct BMW: Car {
     }
     
     static func getRandomCar() -> BMW{
-        return BMW(model: Model.allCases.randomElement()!.rawValue,
+        return BMW(model: Model.allCases.randomElement()?.rawValue ?? "",
                    year: Int.random(in: 2018...2022),
-                   accessories: [Accessories.allCases.randomElement()!],
-                   engineType: EngineType.allCases.randomElement()!,
+                   accessories: [Accessories.allCases.randomElement()],
+                   engineType: EngineType.allCases.randomElement() ?? EngineType.petrol,
                    price: Double.random(in: 50_000...100_000))
     }
 }
@@ -167,8 +172,12 @@ class PorscheDealership: Dealership {
     }
     
     func presaleService(car: Car) {
-        carOnService.append(car)
-        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) sent to pre-sales service")
+        if !carOnService.contains(where: { $0.vin == car.vin }) {
+            carOnService.append(car)
+            print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) sent to pre-sales service")
+        } else {
+            print("The car(vin:\(car.vin)) has already passed pre-sale service.")
+        }
     }
     
     func addToShowroom(car: Car) {
@@ -237,8 +246,12 @@ class BMWDealership: Dealership {
     }
     
     func presaleService(car: Car) {
-        carOnService.append(car)
-        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) sent to pre-sales service")
+        if !carOnService.contains(where: { $0.vin == car.vin }) {
+            carOnService.append(car)
+            print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) sent to pre-sales service")
+        } else {
+            print("The car(vin:\(car.vin)) has already passed pre-sale service.")
+        }
     }
     
     func addToShowroom(car: Car) {
@@ -307,8 +320,12 @@ class ToyotaDealership: Dealership {
     }
     
     func presaleService(car: Car) {
-        carOnService.append(car)
-        print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) sent to pre-sales service")
+        if !carOnService.contains(where: { $0.vin == car.vin }) {
+            carOnService.append(car)
+            print("Car: \(car.brand) \(car.model) year:\(car.year) vin:\(car.vin) sent to pre-sales service")
+        } else {
+            print("The car(vin:\(car.vin)) has already passed pre-sale service.")
+        }
     }
     
     func addToShowroom(car: Car) {
